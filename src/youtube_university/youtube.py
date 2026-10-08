@@ -2,6 +2,7 @@
 """Everything that talks to the YouTube Data API."""
 import json
 import os
+import html
 
 import requests
 from dotenv import load_dotenv
@@ -37,9 +38,35 @@ def search_youtube(query: str, max_results: int = 5) -> list[dict]:
         raise RuntimeError(f"YouTube returned an error ({resp.status_code}): {message}")
     return resp.json()["items"]
 
-if __name__ == "__main__":   # test this file alone: uv run python -m youtube_university.youtube
-    items = search_youtube("python tutorial for beginners")
-    print(json.dumps(items[0], indent=2))     # look at the raw structure once
-    for item in items:
-        video_id = item["id"]["videoId"]
-        print(item["snippet"]["title"], "->", f"https://www.youtube.com/watch?v={video_id}")
+VIDEOS_PER_MODULE = 3
+
+
+def find_videos(queries: list[str], seen_ids: set[str]) -> list[dict]:
+    """Search YouTube with each query and return a few simple video dicts."""
+    videos = []
+    for query in queries:
+        for item in search_youtube(query):
+            video_id = item["id"]["videoId"]
+            title = html.unescape(item["snippet"]["title"])
+            channel_title = html.unescape(item["snippet"]["channelTitle"])
+            
+            if video_id in seen_ids:
+                continue
+
+            if "#shorts" in title.lower():
+                continue
+            
+            seen_ids.add(video_id)
+
+            videos.append({"title": title, "channel": channel_title, "url": f"https://www.youtube.com/watch?v={video_id}"})
+
+            if len(videos) == VIDEOS_PER_MODULE: 
+                return videos
+    return videos
+
+if __name__ == "__main__":
+    seen = set()
+    first = find_videos(["python for beginners"], seen)
+    second = find_videos(["python for beginners"], seen)   # same query, same seen set
+    print("first: ", first)
+    print("second:", second)
