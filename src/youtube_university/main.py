@@ -1,7 +1,12 @@
 # src/youtube_university/main.py
 """Orchestration: ask the user, call the LLM, call YouTube, print the result."""
-from .llm import generate_curriculum
 
+import sys
+
+from .llm import Curriculum, generate_curriculum
+from .youtube import YOUTUBE_KEY, find_videos
+
+QUERIES_PER_MODULE = 1   # each query costs 100 YouTube quota units; keep at 1 while developing
 
 def ask_learner() -> dict:
     """Ask the user 4 questions and return their answers as a profile dict."""
@@ -72,16 +77,52 @@ def ask_learner() -> dict:
     }
 
 
+def print_path(curriculum: Curriculum, results: list) -> None:
+    """Print the finished learning path. `results` is a list of (module, videos) pairs."""
+    # TODO: print the curriculum title, then for each (module, videos) pair:
+    #   the module title, its objectives, and each video's title, channel, and url.
+    #   If videos is empty, print "No videos found".
 
-def main() -> None:        # TEMPORARY: we replace this in Checkpoint 5
-    profile = ask_learner()
-    print("\nGenerating your curriculum (about a minute on CPU)...")
+    print(f"\n\n==== {curriculum.title} ====\n")
+
+    week_number = 0
+    for module, videos in results:
+        week_number += 1
+
+        print(f"\nWeek {week_number}: {module.title}")
+        for objective in module.objectives:
+            print(f"    - {objective}")
+
+        if len(videos) == 0:
+            print("  No videos found")
+        else:
+            for video in videos:
+                title = video["title"]       # video is a dict, so square brackets here
+                channel = video["channel"]
+                url = video["url"]
+                print(f"\n      Watch: {title} ({channel})")
+                print(f"      {url}")
+
+
+def main() -> None:
+    if not YOUTUBE_KEY:
+        sys.exit("YOUTUBE_API_KEY is missing. Check your .env file.")
     try:
+        profile = ask_learner()
+        print("\nGenerating your curriculum (about a minute on CPU)...")
         curriculum = generate_curriculum(profile)
-    except RuntimeError as err:
+        seen_ids: set[str] = set()
+        results = []
+        for module in curriculum.modules:
+            queries = module.search_queries[:QUERIES_PER_MODULE]
+            videos = find_videos(queries, seen_ids)
+            results.append((module, videos))
+
+        print_path(curriculum, results)
+    except RuntimeError as err:      # friendly messages raised by llm.py and youtube.py
         print(err)
-        return
-    print(curriculum.model_dump_json(indent=2))
+    except KeyboardInterrupt:
+        print("\nCancelled.")
 
 
 if __name__ == "__main__":
