@@ -15,7 +15,6 @@ scratch/
 .pytest_cache/
 
 # Generated data
-data/index/
 data/transcripts/
 data/qdrant/
 
