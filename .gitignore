@@ -17,6 +17,7 @@ scratch/
 # Generated data
 data/transcripts/
 data/qdrant/
+data/excluded/
 
 # Temporary debugging
 /qdrant-debug/
