@@ -58,7 +58,12 @@ def find_videos(queries: list[str], seen_ids: set[str]) -> list[dict]:
             
             seen_ids.add(video_id)
 
-            videos.append({"title": title, "channel": channel_title, "url": f"https://www.youtube.com/watch?v={video_id}"})
+            videos.append({
+                "video_id": video_id,
+                "title": title,
+                "channel": channel_title,
+                "url": f"https://www.youtube.com/watch?v={video_id}",
+            })
 
             if len(videos) == VIDEOS_PER_MODULE: 
                 return videos
