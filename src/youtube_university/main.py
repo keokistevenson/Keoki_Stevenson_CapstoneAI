@@ -24,13 +24,9 @@ def ask_learner() -> dict:
     while True:                                   
         level = input("How would you describe your expertise -- beginner, intermediate, or experienced? ").strip()
 
-        newbie = "beginner, intro, starter, new, newbie"
-        some = "some, intermediate"
-        expert = "expert, advanced, experienced, pro"
-
-        if len(level) < 3:
-            print("I didn't get that.\n")
-            continue
+        newbie = {"beginner", "intro", "starter", "new", "newbie"}
+        some = {"some", "intermediate", "mid-level", "midlevel", "mid"}
+        expert = {"expert", "advanced", "experienced", "pro", "senior"}
 
         level = level.lower()
 
