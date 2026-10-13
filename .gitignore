@@ -7,12 +7,17 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
+.venv/
 .env
 .cache/
 output/
 scratch/
 .pytest_cache/
 
+# Generated data
 data/index/
 data/transcripts/
+data/qdrant/
+
+# Temporary debugging
+/qdrant-debug/
