@@ -13,3 +13,6 @@ wheels/
 output/
 scratch/
 .pytest_cache/
+
+data/index/
+data/transcripts/
