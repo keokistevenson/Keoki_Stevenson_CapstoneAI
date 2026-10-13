@@ -31,3 +31,17 @@
 - Problem: input "fas asdfwedvszc44" produced a confident 4-module "FAS Mastery" plan.
 - Found: schema validation checks shape, not meaning; the model has no way to refuse.
 - Lesson: add a confirmation step; document as a limitation.
+
+## [Setup] ChromaDB crashed Python on insert
+- Problem: upsert killed Python with exit code -1073741819 and no traceback.
+- Found: Windows access violation (0xC0000005) inside ChromaDB's native code; same crash on Python 3.12 with hand-made vectors, so not my code or the Python version.
+- Lesson: echo $LASTEXITCODE when a script stops silently; a big negative number means a native crash, not a Python error.
+
+## [RAG] Switched the vector store to Qdrant local mode
+- Problem: ChromaDB unusable on Windows; a NumPy index worked but wasn't a real vector database.
+- Change: qdrant-client local mode stored in data/qdrant/, no server or Docker.
+- Result: smoke test with nomic-embed-text passed; the video_id filter excludes videos outside the curriculum.
+
+## [Qdrant] Point IDs must be numbers or UUIDs
+- Problem: IDs like "VIDEO_ID_0007" are rejected.
+- Lesson: uuid5(namespace, "VIDEO_ID_0007") turns the name into the same UUID every run, so re-indexing overwrites instead of duplicating (3 points after two runs).
